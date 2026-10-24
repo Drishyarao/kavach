@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavach | Image Misuse Check</title>
+<style>
+:root{--bg1:#140a24;--bg2:#2d1650;--accent:#c79bff;--accent2:#ff8fc7;--line:rgba(255,255,255,.16);--text:#f4ecff;--muted:#bba9d6}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);
+background:radial-gradient(circle at 12% 8%,#552a94 0,transparent 42%),radial-gradient(circle at 88% 92%,#8a2f72 0,transparent 38%),linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+.wrap{max-width:980px;margin:0 auto;padding:22px 18px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:1.3rem;letter-spacing:.02em}
+.brand svg{width:38px;height:38px}
+.badge{font-size:.78rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.hero{text-align:center;margin-bottom:30px}
+.eyebrow{color:var(--accent2);font-weight:700;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(1.9rem,5vw,3.2rem);line-height:1.1;margin:12px 0}
+h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:620px;margin:0 auto;line-height:1.6}
+.panel{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:24px;padding:26px;backdrop-filter:blur(8px);box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.vs{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#25103f}
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:210px;padding:16px;text-align:center;border:2px dashed var(--line);border-radius:18px;cursor:pointer;overflow:hidden;transition:.2s}
+.drop:hover,.drop.has{border-color:var(--accent);background:rgba(199,155,255,.08)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop .t{font-weight:700}
+.drop .h{font-size:.85rem;color:var(--muted)}
+.drop img{display:none;max-width:100%;max-height:150px;border-radius:10px;object-fit:contain}
+.drop .fn{font-size:.8rem;color:var(--accent);word-break:break-all}
+button{margin-top:22px;width:100%;padding:15px;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:1.05rem;color:#25103f;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.2s}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(199,155,255,.35)}
+button:disabled{opacity:.6;cursor:wait;transform:none}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
+.step{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(255,255,255,.04)}
+.step b{display:block;color:var(--accent);margin-bottom:6px}
+.step p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+.limits{border-left:4px solid var(--accent2);background:rgba(255,143,199,.08);border-radius:10px;padding:14px 16px;font-size:.9rem;line-height:1.6;color:#f1dff7}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:30px}
+@media(max-width:720px){.pair{grid-template-columns:1fr}.vs{margin:0 auto}.steps{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 3 6 10v13c0 11 7.5 19 18 22 10.5-3 18-11 18-22V10L24 3Z" fill="url(#g)"/><path d="m16 24 6 6 11-12" stroke="#25103f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="6" y1="3" x2="42" y2="45"><stop stop-color="#c79bff"/><stop offset="1" stop-color="#ff8fc7"/></linearGradient></defs></svg>
+      Kavach
+    </div>
+    <span class="badge">recHERsion 2026 · PS2</span>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Privacy-first image misuse support</div>
+    <h1>Is that the <span>same picture?</span><br>Find out without handing yours over.</h1>
+    <p class="sub">Compare an original image with a suspicious one. Kavach looks at how they appear, not who posted them, and gives you a careful, honest result you can use as a starting point.</p>
+  </section>
+
+  <form class="panel" action="/compare" method="post" enctype="multipart/form-data" id="f">
+    <div class="pair">
+      <label class="drop" id="d1">
+        <input type="file" name="image1" accept="image/*" required>
+        <img alt="Preview of original image">
+        <span class="t">Original image</span>
+        <span class="h">Click or drop your own image</span>
+        <span class="fn"></span>
+      </label>
+      <div class="vs">VS</div>
+      <label class="drop" id="d2">
+        <input type="file" name="image2" accept="image/*" required>
+        <img alt="Preview of suspicious image">
+        <span class="t">Suspicious image</span>
+        <span class="h">Click or drop the one you found</span>
+        <span class="fn"></span>
+      </label>
+    </div>
+    <button type="submit" id="go">Compare images</button>
+  </form>
+
+  <section class="steps">
+    <div class="step"><b>1. Choose two images</b><p>Previews show in your browser only, before anything is sent.</p></div>
+    <div class="step"><b>2. We compare the look</b><p>Each image becomes a small visual "sketch" and the sketches are compared.</p></div>
+    <div class="step"><b>3. Get a careful result</b><p>A similarity score with a cautious verdict, plus a report you can save.</p></div>
+  </section>
+
+  <p class="limits"><strong>Please know the limits.</strong> This measures visual similarity only. It cannot prove copying, show who shared an image, or detect deepfakes. Heavy edits can fool it either way, so treat the result as a clue, not proof. If you are in danger, contact local emergency services or someone you trust.</p>
+
+  <footer>Kavach · Student prototype · Not legal advice or an emergency service</footer>
+</div>
+
+<script>
+function setup(id){
+  const box=document.getElementById(id), input=box.querySelector("input"), img=box.querySelector("img"), name=box.querySelector(".fn");
+  input.addEventListener("change",()=>{
+    const f=input.files[0];
+    if(!f){img.style.display="none";name.textContent="";box.classList.remove("has");return;}
+    img.src=URL.createObjectURL(f);img.style.display="block";
+    name.textContent=f.name;box.classList.add("has");
+  });
+}
+setup("d1");setup("d2");
+document.getElementById("f").addEventListener("submit",()=>{
+  const b=document.getElementById("go");b.disabled=true;b.textContent="Comparing...";
+});
+</script>
+</body>
+</html>

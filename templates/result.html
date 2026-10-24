@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavach | Result</title>
+<style>
+:root{--bg1:#140a24;--bg2:#2d1650;--accent:#c79bff;--accent2:#ff8fc7;--line:rgba(255,255,255,.16);--text:#f4ecff;--muted:#bba9d6;--high:#ffb36b;--mid:#ffd86b;--low:#7fe0b0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);
+background:radial-gradient(circle at 12% 8%,#552a94 0,transparent 42%),radial-gradient(circle at 88% 92%,#8a2f72 0,transparent 38%),linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:1.3rem;text-decoration:none;color:var(--text)}
+.brand svg{width:38px;height:38px}
+.badge{font-size:.78rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.panel{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:24px;padding:28px;backdrop-filter:blur(8px);box-shadow:0 20px 50px rgba(0,0,0,.35);margin-bottom:18px}
+.eyebrow{color:var(--accent2);font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(1.6rem,4.5vw,2.3rem);line-height:1.15;margin:10px 0 6px}
+.tone-high{color:var(--high)}.tone-mid{color:var(--mid)}.tone-low{color:var(--low)}
+.score{font-size:3rem;font-weight:800;margin:18px 0 4px}
+.score small{font-size:1rem;font-weight:600;color:var(--muted)}
+.bar{height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0 6px}
+.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.hint{color:var(--muted);font-size:.85rem;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.cell{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.04)}
+.cell b{display:block;font-size:1.5rem;color:var(--accent)}
+.cell span{font-size:.82rem;color:var(--muted)}
+h2{font-size:1.1rem;margin:0 0 10px}
+ul{margin:0;padding-left:20px;color:#e6d9f5;line-height:1.7;font-size:.93rem}
+.limits{border-left:4px solid var(--accent2);background:rgba(255,143,199,.08);border-radius:10px;padding:14px 16px;font-size:.9rem;line-height:1.6;color:#f1dff7}
+.err{border-left:4px solid #ff6b8a;background:rgba(255,107,138,.1);border-radius:10px;padding:16px;line-height:1.6}
+.btn{display:inline-block;margin-top:6px;padding:14px 22px;border-radius:14px;font-weight:800;text-decoration:none;color:#25103f;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 3 6 10v13c0 11 7.5 19 18 22 10.5-3 18-11 18-22V10L24 3Z" fill="url(#g)"/><path d="m16 24 6 6 11-12" stroke="#25103f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="6" y1="3" x2="42" y2="45"><stop stop-color="#c79bff"/><stop offset="1" stop-color="#ff8fc7"/></linearGradient></defs></svg>
+      Kavach
+    </a>
+    <span class="badge">recHERsion 2026 · PS2</span>
+  </header>
+
+  {% if error %}
+  <section class="panel">
+    <div class="eyebrow">Could not compare</div>
+    <h1>Something went wrong</h1>
+    <p class="err">{{ error }}</p>
+    <a class="btn" href="/">Try again</a>
+  </section>
+
+  {% else %}
+  <section class="panel">
+    <div class="eyebrow">Comparison result</div>
+    {% if result.verdict.startswith("Likely") %}
+      <h1 class="tone-high">{{ result.verdict }}</h1>
+    {% elif result.verdict.startswith("Possibly") %}
+      <h1 class="tone-mid">{{ result.verdict }}</h1>
+    {% else %}
+      <h1 class="tone-low">{{ result.verdict }}</h1>
+    {% endif %}
+
+    <div class="score">{{ result.similarity_percent }}% <small>visual similarity score</small></div>
+    <div class="bar"><span style="width: {{ result.similarity_percent }}%"></span></div>
+    <p class="hint">This is a similarity score, not a probability and not proof of anything.</p>
+
+    <div class="grid">
+      <div class="cell"><b>{{ result.phash_distance }}</b><span>pHash distance (0 = identical)</span></div>
+      <div class="cell"><b>{{ result.dhash_distance }}</b><span>dHash distance (0 = identical)</span></div>
+      <div class="cell"><b>{{ result.average_distance }}</b><span>Average distance</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>How to read this</h2>
+    <ul>
+      <li>Each image is turned into a small visual "sketch". We count how many parts of the two sketches differ.</li>
+      <li>A low distance means the images look alike. A high distance means they look different.</li>
+      <li>Cropping, resizing, filters, and heavy edits can change the score in either direction.</li>
+      <li>Keep the original links, screenshots, and dates. They matter more than this score.</li>
+    </ul>
+  </section>
+
+  <p class="limits"><strong>Limits:</strong> {{ result.note }} This tool cannot tell you who shared an image or whether it was posted without permission. If you are in danger, contact local emergency services or someone you trust.</p>
+
+  <p style="text-align:center;margin-top:22px"><a class="btn" href="/">Compare another pair</a></p>
+  {% endif %}
+
+  <footer>Kavach · Student prototype · Not legal advice or an emergency service</footer>
+</div>
+</body>
+</html>
