@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavach | Get help</title>
+<style>
+:root{--bg1:#140a24;--bg2:#2d1650;--accent:#c79bff;--accent2:#ff8fc7;--line:rgba(255,255,255,.16);--text:#f4ecff;--muted:#bba9d6;--high:#ffb36b;--mid:#ffd86b;--low:#7fe0b0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);
+background:radial-gradient(circle at 12% 8%,#552a94 0,transparent 42%),radial-gradient(circle at 88% 92%,#8a2f72 0,transparent 38%),linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+.wrap{max-width:760px;margin:0 auto;padding:22px 18px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:1.3rem;text-decoration:none;color:var(--text)}
+.brand svg{width:38px;height:38px}
+.badge{font-size:.78rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.panel{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:24px;padding:28px;backdrop-filter:blur(8px);box-shadow:0 20px 50px rgba(0,0,0,.35);margin-bottom:18px}
+.eyebrow{color:var(--accent2);font-weight:700;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(1.6rem,4.5vw,2.3rem);line-height:1.15;margin:10px 0 6px}
+.tone-high{color:var(--high)}.tone-mid{color:var(--mid)}.tone-low{color:var(--low)}
+.score{font-size:3rem;font-weight:800;margin:18px 0 4px}
+.score small{font-size:1rem;font-weight:600;color:var(--muted)}
+.bar{height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0 6px}
+.bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.hint{color:var(--muted);font-size:.85rem;margin:0 0 6px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.cell{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.04)}
+.cell b{display:block;font-size:1.5rem;color:var(--accent)}
+.cell span{font-size:.82rem;color:var(--muted)}
+h2{font-size:1.1rem;margin:0 0 10px}
+ul{margin:0;padding-left:20px;color:#e6d9f5;line-height:1.7;font-size:.93rem}
+.limits{border-left:4px solid var(--accent2);background:rgba(255,143,199,.08);border-radius:10px;padding:14px 16px;font-size:.9rem;line-height:1.6;color:#f1dff7}
+.err{border-left:4px solid #ff6b8a;background:rgba(255,107,138,.1);border-radius:10px;padding:16px;line-height:1.6}
+.btn{display:inline-block;margin-top:6px;padding:14px 22px;border-radius:14px;font-weight:800;text-decoration:none;color:#25103f;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+form label{display:block;font-weight:700;font-size:.9rem;margin:16px 0 6px}
+form input,form textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);font:inherit}
+form input::placeholder,form textarea::placeholder{color:#9a88b5}
+form input:focus,form textarea:focus{outline:3px solid rgba(199,155,255,.5);outline-offset:2px}
+form textarea{resize:vertical;min-height:100px}
+.btn-submit{margin-top:20px;width:100%;padding:15px;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:1rem;color:#25103f;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.btn-submit:hover{box-shadow:0 10px 24px rgba(199,155,255,.35)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}
+.nav{display:flex;gap:16px;flex-wrap:wrap;margin:-14px 0 22px}.nav a{color:var(--accent);font-weight:700;font-size:.9rem;text-decoration:none}.nav a:hover{text-decoration:underline}
+.mono{font-family:Consolas,monospace;font-size:.78rem;word-break:break-all;color:#e6d9f5;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin:4px 0 12px}
+.ok{border-left:4px solid var(--low);background:rgba(127,224,176,.1);border-radius:10px;padding:14px 16px;line-height:1.6}
+.res{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0;background:rgba(255,255,255,.04)}.res b{color:var(--accent)}.res a{color:var(--accent2);word-break:break-all}
+.chk{display:flex!important;gap:10px;align-items:center;font-weight:600!important}.chk input{width:auto!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 3 6 10v13c0 11 7.5 19 18 22 10.5-3 18-11 18-22V10L24 3Z" fill="url(#g)"/><path d="m16 24 6 6 11-12" stroke="#25103f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="6" y1="3" x2="42" y2="45"><stop stop-color="#c79bff"/><stop offset="1" stop-color="#ff8fc7"/></linearGradient></defs></svg>
+      Kavach
+    </a>
+    <span class="badge">recHERsion 2026 · PS2</span>
+  </header>
+
+<nav class="nav"><a href="/">Compare</a><a href="/verify">Verify a file</a><a href="/help">Get help</a></nav>
+  <section class="panel">
+    <div class="eyebrow">Action centre</div>
+    <h1>Where to get help (India)</h1>
+    <p class="hint">Kavach does not contact anyone, file a complaint or remove content for you. These are places you can go yourself. Services can change, so check each one.</p>
+    {% set ns = namespace(group="") %}
+    {% for r in resources %}
+      {% if r.group != ns.group %}{% set ns.group = r.group %}<h2 style="margin-top:20px">{{ r.group }}</h2>{% endif %}
+      <div class="res"><b>{{ r.name }}</b><br>{{ r.what }}{% if r.url %}<br><a href="{{ r.url }}" target="_blank" rel="noopener noreferrer">{{ r.url }}</a>{% endif %}</div>
+    {% endfor %}
+  </section>
+  <section class="panel">
+    <h2>Good to know</h2>
+    <ul>
+      <li>Save screenshots, links and dates before anything is removed.</li>
+      <li>Do not contact or confront the person you suspect.</li>
+      <li>You do not have to handle this alone. Tell someone you trust.</li>
+    </ul>
+  </section>
+  <footer>Kavach · Student prototype · Not legal advice or an emergency service</footer>
+</div>
+</body>
+</html>

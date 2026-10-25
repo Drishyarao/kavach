@@ -12,7 +12,9 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from integrity import hashes_match, normalise_hash, sha256_of_path, sha256_of_stream
 from matcher import compare
+from resources import ACTIONS, RESOURCES
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
@@ -22,6 +24,9 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+# Files you may fingerprint on the Verify page (they are hashed, never opened or kept).
+VERIFY_EXTENSIONS = ALLOWED_EXTENSIONS | {".gif", ".bmp", ".pdf", ".txt"}
+ACTION_KEYS = {key for key, _ in ACTIONS}
 
 KNOWN_VERDICTS = {
     "Likely the same source image",
@@ -46,6 +51,11 @@ def clean_text(value, max_len):
     return "".join(ch for ch in value if ch == "\n" or ch >= " ")
 
 
+def display_name(filename):
+    """A short, safe name to show on screen (never used as a path)."""
+    return clean_text(os.path.basename(filename or ""), 80) or "unnamed file"
+
+
 def parse_number(value, low, high):
     number = float(value)
     if not (low <= number <= high):
@@ -67,7 +77,20 @@ def read_report_form(form):
         "average": parse_number(form.get("average_distance"), 0, 64),
         "platform": clean_text(form.get("platform"), 80),
         "notes": clean_text(form.get("notes"), 1000),
+        "reference": clean_text(form.get("reference"), 80),
+        "name_a": clean_text(form.get("name_a"), 80),
+        "name_b": clean_text(form.get("name_b"), 80),
     }
+
+    # File fingerprints are optional, but if present they must look like real SHA-256 values.
+    for key in ("sha256_a", "sha256_b"):
+        raw = clean_text(form.get(key), 80)
+        if raw and not normalise_hash(raw):
+            raise ValueError("bad fingerprint")
+        data[key] = normalise_hash(raw) or ""
+
+    # Actions are tick-boxes; only accept the ones we offered.
+    data["actions"] = [a for a in form.getlist("actions") if a in ACTION_KEYS]
 
     url = clean_text(form.get("source_url"), 500)
     if url:
@@ -117,11 +140,14 @@ def build_pdf(data):
             body,
         ),
         Spacer(1, 6),
+        Paragraph("<b>Reference:</b> " + text(data["reference"]), body),
         Paragraph("1. Details entered by the user", heading),
         Paragraph("<b>Platform:</b> " + text(data["platform"]), body),
         Paragraph("<b>Page link:</b> " + text(data["url"]), body),
         Paragraph("<b>Date noticed:</b> " + text(data["date"]), body),
         Paragraph("<b>Notes:</b> " + text(data["notes"]), body),
+        Paragraph("<b>Steps taken (ticked by the user):</b> " + text(
+            "; ".join(label for key, label in ACTIONS if key in data["actions"]) or ""), body),
         Spacer(1, 6),
         Paragraph("2. Automated comparison measurements", heading),
         Paragraph(
@@ -156,9 +182,38 @@ def build_pdf(data):
             ]
         )
     )
+    story += [table, Spacer(1, 8)]
+
+    if data["sha256_a"] or data["sha256_b"]:
+        cell = ParagraphStyle("KCell", parent=small, fontName="Courier", fontSize=7.5, leading=9, wordWrap="CJK")
+        label = ParagraphStyle("KLabel", parent=small, wordWrap="CJK")
+        fp = Table(
+            [
+                [Paragraph("File", label), Paragraph("SHA-256 fingerprint", label)],
+                [Paragraph(escape(data["name_a"] or "Image 1"), label), Paragraph(data["sha256_a"] or "-", cell)],
+                [Paragraph(escape(data["name_b"] or "Image 2"), label), Paragraph(data["sha256_b"] or "-", cell)],
+            ],
+            colWidths=[45 * mm, 120 * mm],
+        )
+        fp.setStyle(TableStyle([
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#c9b8dd")),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#efe6f8")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ]))
+        story += [
+            Paragraph("File fingerprints (SHA-256)", heading),
+            Paragraph(
+                "A SHA-256 fingerprint changes if even one byte of the file changes. It can show "
+                "whether a file is byte-for-byte the same later. It does not show who made the "
+                "file, when it was made, or whether it was misused.",
+                small,
+            ),
+            Spacer(1, 4),
+            fp,
+            Spacer(1, 10),
+        ]
+
     story += [
-        table,
-        Spacer(1, 10),
         Paragraph("3. Limitations", heading),
         Paragraph(
             "Visual similarity is not proof of copying or misuse, and the score is not a "
@@ -175,7 +230,20 @@ def build_pdf(data):
             "emergency services.",
             body,
         ),
+        Spacer(1, 6),
+        Paragraph("5. Where to get help (India)", heading),
+        Paragraph(
+            "Kavach does not contact anyone or file anything for you. Check each service "
+            "yourself before relying on it.",
+            small,
+        ),
     ]
+    for item in RESOURCES:
+        line = "<b>" + escape(item["name"]) + "</b>"
+        if item["url"]:
+            line += " - " + escape(item["url"])
+        story.append(Paragraph(line + "<br/>" + escape(item["what"]), body))
+        story.append(Spacer(1, 3))
 
     doc.build(story)
     buffer.seek(0)
@@ -194,10 +262,16 @@ def compare_images():
         saved.append(save_temp(request.files.get("image1")))
         saved.append(save_temp(request.files.get("image2")))
         try:
-            result = compare(saved[0], saved[1])
+            result = dict(compare(saved[0], saved[1]))
         except ValueError:
             raise ValueError("One of the files could not be read as an image.")
-        return render_template("result.html", result=result)
+        # Extra, additive fields: the existing template variables are untouched.
+        result["sha256_a"], result["size_a"] = sha256_of_path(saved[0])
+        result["sha256_b"], result["size_b"] = sha256_of_path(saved[1])
+        result["same_file"] = hashes_match(result["sha256_a"], result["sha256_b"])
+        result["name_a"] = display_name(request.files["image1"].filename)
+        result["name_b"] = display_name(request.files["image2"].filename)
+        return render_template("result.html", result=result, actions=ACTIONS)
     except ValueError as err:
         return render_template("result.html", error=str(err))
     finally:
@@ -224,6 +298,42 @@ def report():
         mimetype="application/pdf",
         as_attachment=True,
         download_name="kavach-summary.pdf",
+    )
+
+
+@app.route("/help")
+def help_page():
+    return render_template("help.html", resources=RESOURCES)
+
+
+@app.route("/verify")
+def verify_page():
+    return render_template("verify.html")
+
+
+@app.route("/verify/check", methods=["POST"])
+def verify_check():
+    """Hash an uploaded file in memory and compare it to a fingerprint the user pastes.
+    Nothing is saved to disk."""
+    expected = normalise_hash(request.form.get("expected"))
+    upload = request.files.get("file")
+    if not expected:
+        return render_template("verify.html", error="That does not look like a SHA-256 fingerprint "
+                               "(64 characters, 0-9 and a-f)."), 400
+    if upload is None or upload.filename == "":
+        return render_template("verify.html", error="Please choose a file to check."), 400
+    ext = os.path.splitext(upload.filename)[1].lower()
+    if ext not in VERIFY_EXTENSIONS:
+        return render_template("verify.html", error="That file type is not supported here."), 400
+    actual, size = sha256_of_stream(upload.stream)
+    return render_template(
+        "verify.html",
+        checked=True,
+        match=hashes_match(actual, expected),
+        actual=actual,
+        expected=expected,
+        name=display_name(upload.filename),
+        size=size,
     )
 
 

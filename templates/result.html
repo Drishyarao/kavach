@@ -41,6 +41,11 @@ form textarea{resize:vertical;min-height:100px}
 .btn-submit:hover{box-shadow:0 10px 24px rgba(199,155,255,.35)}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}}
+.nav{display:flex;gap:16px;flex-wrap:wrap;margin:-14px 0 22px}.nav a{color:var(--accent);font-weight:700;font-size:.9rem;text-decoration:none}.nav a:hover{text-decoration:underline}
+.mono{font-family:Consolas,monospace;font-size:.78rem;word-break:break-all;color:#e6d9f5;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px;margin:4px 0 12px}
+.ok{border-left:4px solid var(--low);background:rgba(127,224,176,.1);border-radius:10px;padding:14px 16px;line-height:1.6}
+.res{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0;background:rgba(255,255,255,.04)}.res b{color:var(--accent)}.res a{color:var(--accent2);word-break:break-all}
+.chk{display:flex!important;gap:10px;align-items:center;font-weight:600!important}.chk input{width:auto!important}
 </style>
 </head>
 <body>
@@ -53,6 +58,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
     <span class="badge">recHERsion 2026 · PS2</span>
   </header>
 
+<nav class="nav"><a href="/">Compare</a><a href="/verify">Verify a file</a><a href="/help">Get help</a></nav>
   {% if error %}
   <section class="panel">
     <div class="eyebrow">Could not compare</div>
@@ -81,6 +87,15 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
       <div class="cell"><b>{{ result.dhash_distance }}</b><span>dHash distance (0 = identical)</span></div>
       <div class="cell"><b>{{ result.average_distance }}</b><span>Average distance</span></div>
     </div>
+  </section>
+
+  <section class="panel">
+    <h2>File fingerprints (SHA-256)</h2>
+    {% if result.same_file %}<p class="ok">These two files are byte-for-byte identical.</p>
+    {% else %}<p class="hint">These two files are not byte-for-byte identical, even if they look alike. That is why Kavach also compares how they look.</p>{% endif %}
+    <div class="hint">{{ result.name_a }} ({{ result.size_a }} bytes)</div><div class="mono">{{ result.sha256_a }}</div>
+    <div class="hint">{{ result.name_b }} ({{ result.size_b }} bytes)</div><div class="mono">{{ result.sha256_b }}</div>
+    <p class="hint">Keep these. Later, <a href="/verify" style="color:var(--accent)">check a file against its fingerprint</a>. It shows whether a file changed. It does not prove who made it, when, or any misuse.</p>
   </section>
 
   <section class="panel">
@@ -114,6 +129,13 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
       <input type="hidden" name="phash_distance" value="{{ result.phash_distance }}">
       <input type="hidden" name="dhash_distance" value="{{ result.dhash_distance }}">
       <input type="hidden" name="average_distance" value="{{ result.average_distance }}">
+      <input type="hidden" name="sha256_a" value="{{ result.sha256_a }}">
+      <input type="hidden" name="sha256_b" value="{{ result.sha256_b }}">
+      <input type="hidden" name="name_a" value="{{ result.name_a }}">
+      <input type="hidden" name="name_b" value="{{ result.name_b }}">
+
+      <label for="reference">Your own reference (optional)</label>
+      <input type="text" id="reference" name="reference" maxlength="80" placeholder="e.g. Case 1, or a nickname for this incident">
 
       <label for="platform">Platform where you found it</label>
       <input type="text" id="platform" name="platform" maxlength="80" placeholder="e.g. Instagram, a website, a group chat">
@@ -126,6 +148,9 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
 
       <label for="notes">Notes (optional)</label>
       <textarea id="notes" name="notes" maxlength="1000" placeholder="What happened, in your own words. Share only what you are comfortable including."></textarea>
+
+      <label>Steps you have taken (tick any)</label>
+      {% for key, label in actions %}<label class="chk"><input type="checkbox" name="actions" value="{{ key }}"> {{ label }}</label>{% endfor %}
 
       <button type="submit" class="btn-submit">Download summary PDF</button>
     </form>
