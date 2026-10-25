@@ -22,7 +22,7 @@ h1{font-size:clamp(1.6rem,4.5vw,2.3rem);line-height:1.15;margin:10px 0 6px}
 .score small{font-size:1rem;font-weight:600;color:var(--muted)}
 .bar{height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0 6px}
 .bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.hint{color:var(--muted);font-size:.85rem;margin:0}
+.hint{color:var(--muted);font-size:.85rem;margin:0 0 6px;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
 .cell{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.04)}
 .cell b{display:block;font-size:1.5rem;color:var(--accent)}
@@ -32,6 +32,13 @@ ul{margin:0;padding-left:20px;color:#e6d9f5;line-height:1.7;font-size:.93rem}
 .limits{border-left:4px solid var(--accent2);background:rgba(255,143,199,.08);border-radius:10px;padding:14px 16px;font-size:.9rem;line-height:1.6;color:#f1dff7}
 .err{border-left:4px solid #ff6b8a;background:rgba(255,107,138,.1);border-radius:10px;padding:16px;line-height:1.6}
 .btn{display:inline-block;margin-top:6px;padding:14px 22px;border-radius:14px;font-weight:800;text-decoration:none;color:#25103f;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+form label{display:block;font-weight:700;font-size:.9rem;margin:16px 0 6px}
+form input,form textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);font:inherit}
+form input::placeholder,form textarea::placeholder{color:#9a88b5}
+form input:focus,form textarea:focus{outline:3px solid rgba(199,155,255,.5);outline-offset:2px}
+form textarea{resize:vertical;min-height:100px}
+.btn-submit{margin-top:20px;width:100%;padding:15px;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:1rem;color:#25103f;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.btn-submit:hover{box-shadow:0 10px 24px rgba(199,155,255,.35)}
 footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}}
 </style>
@@ -98,6 +105,32 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
     </ul>
   </section>
 
+  <section class="panel">
+    <h2>Save your incident details (optional)</h2>
+    <p class="hint">Fill in only what you want to include and download a summary PDF. Your images are not part of the report. The PDF is a personal summary to help you stay organised. It is not legal evidence.</p>
+    <form action="/report" method="post" id="reportForm">
+      <input type="hidden" name="verdict" value="{{ result.verdict }}">
+      <input type="hidden" name="similarity_percent" value="{{ result.similarity_percent }}">
+      <input type="hidden" name="phash_distance" value="{{ result.phash_distance }}">
+      <input type="hidden" name="dhash_distance" value="{{ result.dhash_distance }}">
+      <input type="hidden" name="average_distance" value="{{ result.average_distance }}">
+
+      <label for="platform">Platform where you found it</label>
+      <input type="text" id="platform" name="platform" maxlength="80" placeholder="e.g. Instagram, a website, a group chat">
+
+      <label for="source_url">Page link (optional)</label>
+      <input type="url" id="source_url" name="source_url" maxlength="500" placeholder="https://...">
+
+      <label for="noticed_date">Date you noticed it</label>
+      <input type="date" id="noticed_date" name="noticed_date">
+
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" name="notes" maxlength="1000" placeholder="What happened, in your own words. Share only what you are comfortable including."></textarea>
+
+      <button type="submit" class="btn-submit">Download summary PDF</button>
+    </form>
+  </section>
+
   <p class="limits"><strong>Limits:</strong> {{ result.note }} This tool cannot tell you who shared an image or whether it was posted without permission. If you are in danger, contact local emergency services or someone you trust.</p>
 
   <p style="text-align:center;margin-top:22px"><a class="btn" href="/">Compare another pair</a></p>
@@ -105,5 +138,16 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
 
   <footer>Kavach · Student prototype · Not legal advice or an emergency service</footer>
 </div>
+<script>
+(function () {
+  var d = document.getElementById("noticed_date");
+  if (d) {
+    var t = new Date();
+    var m = String(t.getMonth() + 1).padStart(2, "0");
+    var day = String(t.getDate()).padStart(2, "0");
+    d.max = t.getFullYear() + "-" + m + "-" + day;
+  }
+})();
+</script>
 </body>
 </html>
